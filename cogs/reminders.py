@@ -176,15 +176,20 @@ class Reminders(commands.Cog):
             color=discord.Color.blue()
         )
         
-        for reminder in sorted(user_reminders, key=lambda x: float(x["time"])):
-            time_left = max(0, float(reminder["time"]) - datetime.utcnow().timestamp())
-            
-            embed.add_field(
-                name=f"⏰ {reminder['message'][:100]}",
-                value=f"Time left: {self.format_seconds(time_left)}\n",
-                inline=False
-            )
-        
+        for reminder_id, reminder in data.items():
+            if reminder["user_id"] == str(interaction.user.id):
+                created_at = datetime.fromtimestamp(float(reminder["created_at"]))
+                time_left = float(reminder["time"]) - datetime.utcnow().timestamp()
+                embed.add_field(
+                    name=f"Reminder ID: {reminder_id}",
+                    value=(
+                        f"Message: {reminder['message']}\n"
+                        f"Created At: {created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                        f"Time Left: {self.format_seconds(time_left)}"
+                    ),
+                    inline=False
+                )
+
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @check_reminders.before_loop
