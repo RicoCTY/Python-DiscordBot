@@ -3,3 +3,4 @@ Test
 .DS_Store
 __pycache__
 .env
+data/*
