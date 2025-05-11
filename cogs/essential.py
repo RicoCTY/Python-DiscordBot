@@ -38,6 +38,7 @@ class Essential(commands.Cog):
         ping_embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.avatar.url)
         await interaction.response.send_message(embed=ping_embed)
 
+    # Shutdown command
     @app_commands.command(name="shutdown", description="Shutdown the bot")
     @commands.is_owner()
     async def shutdown(self, interaction: discord.Interaction):
@@ -46,7 +47,7 @@ class Essential(commands.Cog):
 
     # Welcome/Goodbye setup commands
     @app_commands.command(name="setup_welcome", description="Set the welcome channel")
-    @app_commands.default_permissions(manage_guild=True)
+    @commands.is_owner()
     async def setup_welcome(self, interaction: discord.Interaction, channel: discord.TextChannel):
         with open(self.config_file, "r") as f:
             config = json.load(f)
@@ -56,7 +57,7 @@ class Essential(commands.Cog):
         await interaction.response.send_message(f"Welcome channel set to {channel.mention}", ephemeral=True)
 
     @app_commands.command(name="setup_goodbye", description="Set the goodbye channel")
-    @app_commands.default_permissions(manage_guild=True)
+    @commands.is_owner()
     async def setup_goodbye(self, interaction: discord.Interaction, channel: discord.TextChannel):
         with open(self.config_file, "r") as f:
             config = json.load(f)
@@ -67,7 +68,7 @@ class Essential(commands.Cog):
 
     # Reaction role commands
     @app_commands.command(name="role_menu", description="Create a reaction role menu")
-    @app_commands.default_permissions(manage_roles=True)
+    @commands.is_owner()
     async def role_menu(
         self,
         interaction: discord.Interaction,
@@ -103,7 +104,7 @@ class Essential(commands.Cog):
 
     # Add role to existing menu
     @app_commands.command(name="add_role", description="Add a role to the role menu")
-    @app_commands.default_permissions(manage_roles=True)
+    @commands.is_owner()
     async def add_role(
         self,
         interaction: discord.Interaction,
@@ -156,7 +157,7 @@ class Essential(commands.Cog):
 
     # Remove role from existing menu
     @app_commands.command(name="remove_role", description="Remove a role from the role menu")
-    @app_commands.default_permissions(manage_roles=True)
+    @commands.is_owner()
     async def remove_role(
         self,
         interaction: discord.Interaction,
@@ -210,6 +211,105 @@ class Essential(commands.Cog):
             
             await interaction.response.send_message(
                 f"Removed role {role.mention} (emoji: {emoji}) from the menu.",
+                ephemeral=True
+            )
+            
+        except Exception as e:
+            await interaction.response.send_message(
+                f"Error: {str(e)}",
+                ephemeral=True
+            )
+
+    # Edit menu title
+    @app_commands.command(name="edit_menu_title", description="Edit the title of an existing role menu")
+    @commands.is_owner()
+    async def edit_menu_title(
+        self,
+        interaction: discord.Interaction,
+        message_id: str,
+        new_title: str
+    ):
+        """Edit the title of an existing role menu"""
+        try:
+            channel = interaction.channel
+            message = await channel.fetch_message(int(message_id))
+            
+            with open(self.reaction_roles_file, "r") as f:
+                config = json.load(f)
+            
+            if message_id not in config:
+                await interaction.response.send_message(
+                    "This message isn't a role menu.",
+                    ephemeral=True
+                )
+                return
+            
+            if not message.embeds:
+                await interaction.response.send_message(
+                    "This message doesn't have an embed.",
+                    ephemeral=True
+                )
+                return
+            
+            embed = message.embeds[0]
+            embed.title = new_title
+            await message.edit(embed=embed)
+            
+            await interaction.response.send_message(
+                "Successfully updated the menu title!",
+                ephemeral=True
+            )
+            
+        except Exception as e:
+            await interaction.response.send_message(
+                f"Error: {str(e)}",
+                ephemeral=True
+            )
+
+    # Edit menu description
+    @app_commands.command(name="edit_menu_description", description="Edit the description of an existing role menu")
+    @commands.is_owner()
+    async def edit_menu_description(
+        self,
+        interaction: discord.Interaction,
+        message_id: str,
+        new_description: str):
+        """Edit the description of an existing role menu"""
+        try:
+            channel = interaction.channel
+            message = await channel.fetch_message(int(message_id))
+            
+            with open(self.reaction_roles_file, "r") as f:
+                config = json.load(f)
+            
+            if message_id not in config:
+                await interaction.response.send_message(
+                    "This message isn't a role menu.",
+                    ephemeral=True
+                )
+                return
+            
+            if not message.embeds:
+                await interaction.response.send_message(
+                    "This message doesn't have an embed.",
+                    ephemeral=True
+                )
+                return
+            
+            embed = message.embeds[0]
+            # Preserve the role list if it exists
+            current_desc = embed.description
+            if "\n\n" in current_desc:
+                original_part = current_desc.split("\n\n")[0]
+                role_list = current_desc.split("\n\n")[1]
+                embed.description = f"{new_description}\n\n{role_list}"
+            else:
+                embed.description = new_description
+                
+            await message.edit(embed=embed)
+            
+            await interaction.response.send_message(
+                "Successfully updated the menu description!",
                 ephemeral=True
             )
             
