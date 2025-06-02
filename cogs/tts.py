@@ -11,6 +11,7 @@ class TTSCommands(commands.Cog):
         self.voice_clients = {}
         self.inactivity_timers = {}
 
+    # Define available voice options
     VOICE_OPTIONS = {
         "Soft Female - Jenny": "en-US-JennyNeural",
     }

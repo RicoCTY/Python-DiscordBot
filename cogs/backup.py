@@ -1,3 +1,4 @@
+# backup.py
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -117,6 +118,7 @@ class Backup(commands.Cog):
         zip_buffer.seek(0)
         return zip_buffer
 
+    # Command to create a backup
     @app_commands.command(name="create_backup", description="Create a backup of the server")
     @app_commands.default_permissions(administrator=True)
     async def create_backup_command(self, interaction: discord.Interaction):

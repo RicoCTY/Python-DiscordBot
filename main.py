@@ -1,43 +1,73 @@
 import discord
-import os, asyncio
+import asyncio
+import os
 from discord.ext import commands, tasks
-from dotenv import load_dotenv
 from itertools import cycle
 
-# load environment variables from .env file
-load_dotenv()
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+from config.config import config
+from utils.logger import logger
 
-bot = commands.Bot(command_prefix = "/", intents = discord.Intents.all())
+# Initialize bot with configuration
+intents = discord.Intents.all()
+bot = commands.Bot(
+    command_prefix=config.PREFIX,
+    intents=intents,
+    owner_ids=config.OWNER_IDS
+)
 
-bot_statuses = cycle(["with fire", "Work in Process..."])
+# Status rotation
+bot_statuses = cycle([
+    "with fire",
+    "Work in Process...",
+    f"Prefix: {config.PREFIX}",
+    "Use /help for commands"
+])
 
-@tasks.loop(seconds = 30)
+@tasks.loop(seconds=30)
 async def change_bot_status():
-    await bot.change_presence(activity = discord.Game(next(bot_statuses)))
+    """Change the bot's status every 30 seconds."""
+    try:
+        await bot.change_presence(activity=discord.Game(next(bot_statuses)))
+    except Exception as e:
+        logger.error(f"Error changing bot status: {e}")
 
 @bot.event
 async def on_ready():
-    print("bot is online")
+    """Called when the bot is ready and connected to Discord."""
+    logger.info(f"Bot is online as {bot.user.name} (ID: {bot.user.id})")
     change_bot_status.start()
+    
     try:
         slash = await bot.tree.sync()
-        print(f"Synced {len(slash)} commands")
+        logger.info(f"Synced {len(slash)} slash commands")
     except Exception as e:
-        print("An error with syncing application commands has occurred: ", e)
+        logger.error(f"Error syncing application commands: {e}")
 
-async def load():
+async def load_extensions():
+    """Load all cog extensions."""
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             try:
                 await bot.load_extension(f"cogs.{filename[:-3]}")
-                print(f"Loaded {filename}")
+                logger.info(f"Loaded extension: {filename}")
             except Exception as e:
-                print(f"Failed to load {filename}: {e}")
+                logger.error(f"Failed to load extension {filename}: {e}")
 
 async def main():
-    async with bot:
-        await load()
-        await bot.start(DISCORD_TOKEN)
+    """Main function to start the bot."""
+    try:
+        # Validate configuration
+        config.validate()
+        
+        # Load extensions
+        await load_extensions()
+        
+        # Start the bot
+        async with bot:
+            await bot.start(config.TOKEN)
+    except Exception as e:
+        logger.error(f"Error starting bot: {e}")
+        raise
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
