@@ -88,7 +88,7 @@ python3 main.py
 
 ### Project Structure
 ```
-discord_bot/
+Python-DiscordBot/
 ├── cogs/           # Command modules
 │   ├── fun.py      # Fun commands
 │   ├── music.py    # Music features
