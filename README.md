@@ -10,6 +10,12 @@
 /network/members"><img src="https://img.shields.io/github/forks/RicoCTY/Python-DiscordBot?logo=github&color=blue" alt="Forks"></a>
 </p>
 
+<p align="center">
+  <img width="180" alt="Bot logo" src="https://github.com/user-attachments/assets/895cd213-4f3d-4142-93f9-7fca08782a50"/>
+</p>
+
+
+
 ## 🎯 Overview
 
 A feature-rich Discord bot that combines AI chat capabilities with music playback features. Perfect for enhancing your Discord server with intelligent conversations, entertainment, and utility functions.
