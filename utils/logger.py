@@ -23,20 +23,20 @@ from config.config import config
 colorama.init()
 
 class DiscordContextFilter(logging.Filter):
-    """Filter to add Discord context to log records."""
+    #Filter to add Discord context to log records
     
     def filter(self, record: logging.LogRecord) -> bool:
-        """Add Discord context to the log record."""
+        #Add Discord context to the log record
         record.discord_guild = getattr(record, 'discord_guild', 'N/A')
         record.discord_channel = getattr(record, 'discord_channel', 'N/A')
         record.correlation_id = getattr(record, 'correlation_id', str(uuid.uuid4()))
         return True
 
 class JSONFormatter(logging.Formatter):
-    """Format log records as JSON."""
+    #Format log records as JSON
     
     def format(self, record: logging.LogRecord) -> str:
-        """Format the log record as JSON."""
+        #Format the log record as JSON
         log_data = {
             'timestamp': datetime.utcnow().isoformat(),
             'level': record.levelname,
@@ -55,8 +55,7 @@ class JSONFormatter(logging.Formatter):
         return json.dumps(log_data)
 
 class ColoredFormatter(logging.Formatter):
-    """Format log records with colors for console output."""
-    
+    #Format log records with colors for console output
     COLORS = {
         'DEBUG': colorama.Fore.BLUE,
         'INFO': colorama.Fore.GREEN,
@@ -66,7 +65,7 @@ class ColoredFormatter(logging.Formatter):
     }
     
     def format(self, record: logging.LogRecord) -> str:
-        """Format the log record with colors."""
+        #Format the log record with colors
         if not record.exc_info:
             level = record.levelname
             color = self.COLORS.get(level, colorama.Fore.WHITE)
@@ -74,14 +73,14 @@ class ColoredFormatter(logging.Formatter):
         return super().format(record)
 
 class AsyncRotatingFileHandler(RotatingFileHandler):
-    """Asynchronous rotating file handler."""
+    #Asynchronous rotating file handler
     
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self._lock = threading.Lock()
     
     def emit(self, record: logging.LogRecord) -> None:
-        """Emit the record to the file."""
+        #Emit the record to the file
         try:
             with self._lock:
                 super().emit(record)
@@ -89,7 +88,7 @@ class AsyncRotatingFileHandler(RotatingFileHandler):
             self.handleError(record)
 
 class DiscordWebhookHandler(logging.Handler):
-    """Handler for sending critical logs to Discord webhook."""
+    #Handler for sending critical logs to Discord webhook
     
     def __init__(self, webhook_url: str, level: int = logging.ERROR):
         super().__init__(level)
@@ -97,25 +96,25 @@ class DiscordWebhookHandler(logging.Handler):
         self.session: Optional[aiohttp.ClientSession] = None
     
     async def setup(self) -> None:
-        """Set up the aiohttp session."""
+        #Set up the aiohttp session
         if not self.session:
             self.session = aiohttp.ClientSession()
     
     async def close(self) -> None:
-        """Close the aiohttp session."""
+        #Close the aiohttp session
         if self.session:
             await self.session.close()
             self.session = None
     
     def emit(self, record: logging.LogRecord) -> None:
-        """Emit the record to Discord webhook."""
+        #Emit the record to Discord webhook
         if not self.session:
             return
         
         asyncio.create_task(self._send_to_webhook(record))
     
     async def _send_to_webhook(self, record: logging.LogRecord) -> None:
-        """Send the log record to Discord webhook."""
+        #Send the log record to Discord webhook
         if not self.session:
             return
         
@@ -244,7 +243,6 @@ logger = setup_logger(
 
 # Health check endpoint
 async def health_check() -> Dict[str, Any]:
-    """Return health check information."""
     return {
         'status': 'healthy',
         'timestamp': datetime.utcnow().isoformat(),

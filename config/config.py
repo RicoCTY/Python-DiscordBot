@@ -33,7 +33,7 @@ class Config:
     
     @classmethod
     def get_all(cls) -> Dict[str, Any]:
-        """Get all configuration values as a dictionary."""
+        # Get all configuration values as a dictionary
         return {
             key: value for key, value in cls.__dict__.items()
             if not key.startswith("_") and isinstance(value, (str, int, list, dict, bool))
@@ -41,7 +41,7 @@ class Config:
     
     @classmethod
     def validate(cls) -> bool:
-        """Validate the configuration."""
+        #Validate the configuration
         if not cls.TOKEN:
             raise ValueError("Discord token is required")
         return True
