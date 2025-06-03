@@ -20,7 +20,6 @@ bot_statuses = cycle([
     "with fire",
     "Work in Process...",
     f"Prefix: {config.PREFIX}",
-    "Use /help for commands"
 ])
 
 @tasks.loop(seconds=30)
